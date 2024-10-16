@@ -1,0 +1,32 @@
+---
+version: '3'
+services:
+  valheim:
+    image: lloesche/valheim-server:latest
+    container_name: valheim_server
+    restart: unless-stopped
+    environment:
+      - SERVER_NAME=Valheim Server
+      - WORLD_NAME=Dedicated
+      - SERVER_PASS=strongpass!!!
+      - SERVER_PUBLIC=0
+      - DNS_1=1.1.1.1
+      - DNS_2=1.0.0.1
+      - UPDATE_IF_IDLE=true
+      - BACKUPS=true
+      - BACKUPS_MAX_COUNT=10
+      - TZ=Europe/Zagreb
+      - SUPERVISOR_HTTP=true
+      - SUPERVISOR_HTTP_PORT=9001
+      - SUPERVISOR_HTTP_USER=admin
+      - SUPERVISOR_HTTP_PASS=admin123456!
+    volumes:
+      - /home/user/valheim_server/config:/config
+      - /home/user/valheim_server/data:/opt/valheim
+    ports:
+      - 2459-2461:2456-2458/udp
+      - 9001:9001/tcp
+    logging:
+      driver: journald
+      options:
+        tag: docker-valheim-server
