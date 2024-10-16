@@ -1,0 +1,94 @@
+version: '3'
+ 
+services:
+  zabbix-db-service:
+    image: mariadb:11.2.4-jammy
+    container_name: zabbix-db-container
+    hostname: zabbix-db-container
+    environment:
+      MARIADB_USER: "zabbix"
+      MARIADB_PASSWORD: "aaaaaaaaaaaaaaaaaaaaaaa"
+      MARIADB_ROOT_PASSWORD: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    ports:
+      - "3306:3306"
+    volumes:
+      - zbx-db-data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - bridge
+ 
+  zabbix-server-service:
+    image: zabbix/zabbix-server-mysql:7.0-ubuntu-latest
+    container_name: zabbix-server-container
+    hostname: zabbix-server-container
+    environment:
+      ZBX_TIMEOUT: 30
+      DB_SERVER_HOST: "zabbix-db-container"
+      MYSQL_USER: "zabbix"
+      MYSQL_PASSWORD: "aaaaaaaaaaaaaaaaaaaaaaa"
+      ZBX_STARTPOLLERS: 50
+      ZBX_STARTTRAPPERS: 10
+      ZBX_HOUSEKEEPINGFREQUENCY: 1
+      ZBX_MAXHOUSEKEEPERDELETE: 500000
+      ZBX_CACHESIZE: 256M
+      ZBX_CACHEUPDATEFREQUENCY: 60
+      ZBX_STARTDBSYNCERS: 4
+      ZBX_HISTORYCACHESIZE: 256M
+      ZBX_HISTORYINDEXCACHESIZE: 64M
+      ZBX_TRENDCACHESIZE: 64M
+      ZBX_VALUECACHESIZE: 256M
+      ZBX_UNREACHABLEPERIOD: 45
+      ZBX_UNAVAILABLEDELAY: 60
+      ZBX_UNREACHABLEDELAY: 15
+      ZBX_STARTPOOLERSUNREACHABLE: 10
+    ports:
+      - "10051:10051"
+    depends_on:
+      - zabbix-db-service
+    restart: unless-stopped
+    networks:
+      - bridge
+ 
+  zabbix-web-service:
+    image: zabbix/zabbix-web-nginx-mysql:7.0-ubuntu-latest
+    container_name: zabbix-web-container
+    hostname: zabbix-web-container
+    environment:
+      PHP_TZ: "Europe/Zagreb"
+      ZBX_SERVER_HOST: "10.110.10.30"
+      DB_SERVER_HOST: "zabbix-db-service"
+      MYSQL_USER: "zabbix"
+      MYSQL_PASSWORD: "aaaaaaaaaaaaaaaaaaaaaaa"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - zabbix-db-service
+      - zabbix-server-service
+    restart: unless-stopped
+    networks:
+      - bridge
+ 
+  zabbix-proxy-service:
+    image: nginx:alpine
+    container_name: zabbix-proxy-container
+    hostname: zabbix-proxy-container
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/nginx-proxy/conf.d/:/etc/nginx/conf.d/
+      - /opt/nginx-proxy/ssl/:/etc/nginx/ssl/
+    depends_on:
+      - zabbix-web-service
+    restart: unless-stopped
+    links:
+      - zabbix-web-service:zabbix
+    networks:
+      - bridge
+ 
+volumes:
+  zbx-db-data:
+ 
+networks:
+  bridge:
+    driver: bridge
