@@ -1,3 +1,6 @@
-# When creating the database
-
-create database zabbix character set utf8 collate utf8_bin;
+docker exec -it zabbix-db-container bash
+mariadb -p
+create database zabbix character set utf8mb4 collate utf8mb4_bin;
+create user 'zabbix'@'localhost' identified by 'aaaaaaaaaaaaaaaaaaaaaaa';
+grant all privileges on zabbix.* to 'zabbix'@'%';
+SET GLOBAL log_bin_trust_function_creators = 1;
