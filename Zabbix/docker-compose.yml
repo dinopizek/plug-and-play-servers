@@ -2,7 +2,7 @@ version: '3'
  
 services:
   zabbix-db-service:
-    image: mariadb:11.2.4-jammy
+    image: mariadb:latest
     container_name: zabbix-db-container
     hostname: zabbix-db-container
     environment:
@@ -18,7 +18,7 @@ services:
       - bridge
  
   zabbix-server-service:
-    image: zabbix/zabbix-server-mysql:7.0-ubuntu-latest
+    image: zabbix/zabbix-server-mysql:latest
     container_name: zabbix-server-container
     hostname: zabbix-server-container
     environment:
@@ -50,7 +50,7 @@ services:
       - bridge
  
   zabbix-web-service:
-    image: zabbix/zabbix-web-nginx-mysql:7.0-ubuntu-latest
+    image: zabbix/zabbix-web-nginx-mysql:latest
     container_name: zabbix-web-container
     hostname: zabbix-web-container
     environment:
